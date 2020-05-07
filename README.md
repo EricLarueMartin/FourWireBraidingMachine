@@ -5,7 +5,7 @@ Uses four horn gears to move four spool holders around on carriages.
 Design files for inventor included. Design could easily be extended for larger number of wires.
 
 
-In addition to printer parts the following will be needed:
+In addition to printed parts the following will be needed:
 
 NEMA 17 stepper motors and drivers (L298N stepper motor driver boards were used, but anything compatible with Arduino is fine)
 

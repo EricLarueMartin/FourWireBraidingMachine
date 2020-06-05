@@ -1,17 +1,10 @@
-/* Example sketch to control a stepper motor with L298N motor driver, Arduino UNO and AccelStepper.h library. Acceleration and deceleration. More info: https://www.makerguides.com */
+// length unit is left off in names of variables, as it doesn't really matter to the program, but the constants were set for centimeters and seconds
+
 // Include the AccelStepper library:
 #include <AccelStepper.h>
 #include <MultiStepper.h>
 // Define the AccelStepper interface type:
 #define MotorInterfaceType 4
-// Create a new instance of the AccelStepper class:
-AccelStepper braider = AccelStepper(MotorInterfaceType, 8, 9, 10, 11); // braiding section stepper motor
-AccelStepper winder = AccelStepper(MotorInterfaceType, 4, 5, 6, 7); // winding section stepper motor
-
-MultiStepper stepper;
-
-// length unit is left off in names of variables, as it doesn't really matter to the program, but this was set up for centimeters on the winder circumference
-// time is in seconds
 
 // physical values used to calculate stepper speeds
 const int HornGearTeeth = 26;
@@ -23,80 +16,135 @@ const float WinderCircumference = 4.5 * 3.14159265; // in centimeters
 
 // constants that depend on other constants
 
+const float StepsPerDistance = WinderStepsPerRevolution/WinderCircumference; // steps per distance unit (cm) on winder
+const float StepsPerBraid = BraiderStepsPerRevolution*HornGearTeeth/DriveGearTeeth*RevolutionsPerBraid; // steps to complete a braiding cycle
+
 // ratio of braiding stepper motor to winding gear to get one braid per centimeter
-const float stepRatio = RevolutionsPerBraid*HornGearTeeth/DriveGearTeeth*WinderCircumference*BraiderStepsPerRevolution/WinderStepsPerRevolution; 
+const float StepRatio =  StepsPerBraid/StepsPerDistance;
 
-const float stepsPer = BraiderStepsPerRevolution/WinderCircumference; // steps per distance unit (cm) on winder
 
-// user adjusted settings
+class cableBraider
+{
+ public: 
 
-float windingSpeed = 1.2; // one distance unit (cm) per second
-float braidsPer = 0.1; // per distance unit (cm)
-float braiderAcceleration = 25; // acceleration of braider in steps per second squared
-int braidDirection = 1; // braiding motor turning direction
+  AccelStepper *braiderStepper,*winderStepper;
+  MultiStepper *steppers;
 
-// values calculated based on user adjuted settings
+  // user adjusted settings and defaults
+  float windingSpeed = 0.1; // one distance unit (cm) per second
+  float braidsPer = 1.0; // per distance unit (cm)
+  float braiderAcceleration = 25.0; // acceleration of braider in steps per second squared
+  int braidDirection = 1; // braiding motor turning direction
 
-// speed stepper motors run at in steps per second
-float winderStepSpeed; // = windingSpeed/WinderCircumference*WinderStepsPerRevolution; 
-float braiderStepSpeed; // = winderStepSpeed * stepRatio * braidsPer;
+  int braidPin = 13; // default is all braiders run if pin 13 is grounded
+  
+  // values calculated based on user adjuted settings
+  
+  // speed stepper motors run at in steps per second
+  float winderStepSpeed; // = windingSpeed/WinderCircumference*WinderStepsPerRevolution; 
+  float braiderStepSpeed; // = winderStepSpeed * stepRatio * braidsPer;
+  
+  // run control
+  bool bRunning = false;
+  bool outputsEnabled = false;
+  float cableLength; // target cable length
 
-// run control
-bool bRunning = false;
-float cableLength; // target cable length
+  cableBraider(int pin0, int pin1, int pin2, int pin3, int pin4, int pin5, int pin6, int pin7); // constructor sets defaults
+  void braidCable();
+  bool cableBraider::runCheck();
+  void cableBraider::haltSteppers();
+  void cableBraider::recalc();
+  void cableBraider::displaySettings();
+  void cableBraider::displayPosition();
 
-void braidCable(float cableLength) {
+};
+
+/* pins for MotorInterfaceType = 4 (FULL4WIRE)
+0-3 - winder L298N pins 1-4
+4-8 - braider L298N pins 1-4   
+*/
+cableBraider::cableBraider(int pin0, int pin1, int pin2, int pin3, int pin4, int pin5, int pin6, int pin7) // constructor sets defaults
+{
+  winderStepper = new AccelStepper(MotorInterfaceType,pin0,pin1,pin2,pin3);
+  braiderStepper = new AccelStepper(MotorInterfaceType,pin4,pin5,pin6,pin7);
+
+  steppers = new MultiStepper;
+
+  steppers->addStepper(*winderStepper);
+  steppers->addStepper(*braiderStepper);
+
+  // this part should be redundant, but just in case
+  windingSpeed = 0.1;
+  braidsPer = 1.0;
+  braiderAcceleration = 25.0;
+  braidDirection = 1;
+  braidPin = 13;
+  bRunning = false;
+  cableLength = 0.0;
+  outputsEnabled = false;
+}
+
+void cableBraider::braidCable() {
   // Set target position:
-  winder.enableOutputs();
-  braider.enableOutputs();
+  winderStepper->enableOutputs();
+  braiderStepper->enableOutputs();
+  outputsEnabled = true;
   long absolute[2];
-  absolute[0] = cableLength*stepsPer; // set target winder position
-  absolute[1] = braidDirection*cableLength*stepsPer*stepRatio; // braider position required to maintain braid ratio
+  absolute[0] = cableLength*StepsPerDistance; // set target winder position
+  absolute[1] = braidDirection*cableLength*StepsPerDistance*braiderStepSpeed/winderStepSpeed; // braider position required to maintain braid ratio
   // use the current position as the starting position
-  winder.setCurrentPosition(0);
-  braider.setCurrentPosition(0);
-  // set steppers to run for desired cable length
-  stepper.moveTo(absolute);
+  winderStepper->setCurrentPosition(0);
+  braiderStepper->setCurrentPosition(0);
   // Run to position with set speed and acceleration:
   Serial.print("Stepping to position ");
   Serial.print(cableLength);
-  Serial.println(" cm.");
+  Serial.print(" cm. ( ");
+  Serial.print(absolute[0]);
+  Serial.print(" / ");
+  Serial.print(absolute[1]);
+  Serial.println(" )");      
+  // set steppers to run for desired cable length
+//  delay(100);
+  steppers->moveTo(absolute);
 }
 
-bool braidRunCheck() {
-  if (stepper.run()){  
+bool cableBraider::runCheck() {
+  if (steppers->run()){  
     Serial.print("Position ");
-    Serial.print(winder.currentPosition()/stepsPer);
+    Serial.print(winderStepper->currentPosition()/StepsPerDistance);
     Serial.println(" cm.");
     return true;
   } else return false;
 }
 
-void haltSteppers()
+void cableBraider::haltSteppers()
 {
   Serial.println("Stopping steppers.");
-  winder.stop();
-  braider.stop();
+  winderStepper->stop();
+  braiderStepper->stop();
   bRunning = false;
   displayPosition();
-  winder.disableOutputs();
-  braider.disableOutputs();
+  winderStepper->disableOutputs();
+  braiderStepper->disableOutputs();
+  outputsEnabled = false;
 }
 
 // recalculate the stepping speeds after parameter change
-void recalc() {
+void cableBraider::recalc() 
+{
   if (bRunning) haltSteppers();
-  winderStepSpeed = windingSpeed/WinderCircumference*WinderStepsPerRevolution; 
-  braiderStepSpeed = winderStepSpeed * stepRatio * braidsPer;
-  winder.setMaxSpeed(winderStepSpeed);
-  winder.setAcceleration(braiderAcceleration/stepRatio);
-  braider.setMaxSpeed(braiderStepSpeed);
-  braider.setAcceleration(braiderAcceleration);
+  winderStepSpeed = windingSpeed*StepsPerDistance; 
+  braiderStepSpeed = winderStepSpeed * StepRatio * braidsPer;
+  winderStepper->setMaxSpeed(winderStepSpeed);
+  winderStepper->setSpeed(winderStepSpeed);
+  winderStepper->setAcceleration(braiderAcceleration/(StepRatio*braidsPer));
+  braiderStepper->setMaxSpeed(braiderStepSpeed);
+  braiderStepper->setSpeed(braiderStepSpeed);
+  braiderStepper->setAcceleration(braiderAcceleration);
 }
 
-void displaySettings(){
-  Serial.print("stepsPer = ");
-  Serial.println(stepsPer);
+void cableBraider::displaySettings()
+{
   Serial.print("braidsPer = ");
   Serial.println(braidsPer);
   Serial.print("windingSpeed = ");
@@ -111,95 +159,123 @@ void displaySettings(){
   Serial.println(braidDirection);
 }
 
-void displayPosition() {
+void cableBraider::displayPosition() 
+{
   Serial.print("Position ");
-  Serial.print(winder.currentPosition()/stepsPer);
+  Serial.print(winderStepper->currentPosition()/StepsPerDistance);
   Serial.print(" cm. ( ");
-  Serial.print(winder.currentPosition());
+  Serial.print(winderStepper->currentPosition());
   Serial.print(" / ");
-  Serial.print(braider.currentPosition());
+  Serial.print(braiderStepper->currentPosition());
   Serial.println(" )");      
 }
+
+cableBraider braider(4,5,6,7,8,9,10,11);
 
 void setup() {
 // start serial port at 9600 bps
   Serial.begin(9600);
-  
-  stepper.addStepper(winder);
-  stepper.addStepper(braider);
-
-  recalc();
-//  winder.setMaxSpeed(winderStepSpeed);
-//  winder.setAcceleration(braiderAcceleration/stepRatio);
-//  braider.setMaxSpeed(braiderStepSpeed);
-//  braider.setAcceleration(braiderAcceleration);
 
 // wait for serial port to connect. Needed for native USB port only
-  while (!Serial) {;}
-  displaySettings();
-  Serial.println("A          : set acceleration of braiding motor in steps pre second squared.");
-  Serial.println("B          : set braid density in braids per centimeters.");
-  Serial.println("S          : set winding speed in centimeters per second.");
-  Serial.println("D          : change braiding motor direction.");
-  Serial.println("?          : display settings.");
-  Serial.println("P          : report position in centimeters.");
-  Serial.println("H          : halt motors.");
-  Serial.println("R <length> : run to braid length of cable in centimeters.");
+  int ctDelay = 10000; // milliseconds to wait on serial
+  while (!Serial) {
+    delay(1);
+    --ctDelay;
+  };
+  if (Serial)
+  {
+    Serial.print("StepsPerDistance = ");
+    Serial.println(StepsPerDistance);
+    Serial.print("StepsPerBraid = ");
+    Serial.println(StepsPerBraid);
+    Serial.print("Ratio for 1 braid per cm = ");
+    Serial.println(StepRatio);
+    Serial.println("A          : set acceleration of braiding motor in steps pre second squared.");
+    Serial.println("B          : set braid density in braids per centimeters.");
+    Serial.println("S          : set winding speed in centimeters per second.");
+    Serial.println("D          : change braiding motor direction.");
+    Serial.println("?          : display settings.");
+    Serial.println("P          : report position in centimeters.");
+    Serial.println("H          : halt motors.");
+    Serial.println("R <length> : run to braid length of cable in centimeters.");
+  }
+  pinMode(13,INPUT_PULLUP);
+  
+  braider.recalc();
+  braider.displaySettings();
+
 }
 
 void loop() {
   while (!Serial.available()) {
-    if (bRunning) // was running
-      if (!stepper.run()) { // did it stop?     
-        displayPosition();
-        winder.disableOutputs();
-        braider.disableOutputs();
-        bRunning = false;
+    if (braider.bRunning) // was running
+    {
+      if (!braider.steppers->run()) { // did it stop?     
+        braider.displayPosition();
+        braider.winderStepper->disableOutputs();
+        braider.braiderStepper->disableOutputs();
+        braider.bRunning = false;
       }
+    }
+    else if (!digitalRead(braider.braidPin)) // run pin is grounded
+    {
+        if (Serial &&  millis()%10000 == 0)
+          Serial.println("Free running.");
+        if (!braider.outputsEnabled)
+        { // if outputs aren't enabled then run to braid a short amount of cable just to get settings going
+          braider.cableLength = 1.0;
+          braider.braidCable();
+        }
+        braider.winderStepper->runSpeed();
+        braider.braiderStepper->runSpeed();
+    }
   } 
   char arg = Serial.read();
   switch (toUpperCase(arg)) {
     case 'R' :
-      cableLength = Serial.parseFloat();
-      braidCable(cableLength);
-      bRunning = true;
+      braider.cableLength = Serial.parseFloat();
+      Serial.print("Braiding for ");
+      Serial.print(braider.cableLength);
+      Serial.println(" cm.");  
+      braider.braidCable();
+      braider.bRunning = true;
       break;
     case 'B' :
-      braidsPer = Serial.parseFloat();
+      braider.braidsPer = Serial.parseFloat();
       Serial.print("Braid density set to ");
-      Serial.print(braidsPer);
+      Serial.print(braider.braidsPer);
       Serial.println(" braids per cm.");  
-      recalc();
-      displaySettings();
+      braider.recalc();
+      braider.displaySettings();
       break;
     case 'S' :
-      windingSpeed = Serial.parseFloat();
+      braider.windingSpeed = Serial.parseFloat();
       Serial.print("Winding speed set to ");
-      Serial.print(windingSpeed);
+      Serial.print(braider.windingSpeed);
       Serial.println(" cm/s.");  
-      recalc();
-      displaySettings();
+      braider.recalc();
+      braider.displaySettings();
       break;
     case 'A' :
-      braiderAcceleration = Serial.parseFloat();
+      braider.braiderAcceleration = Serial.parseFloat();
       Serial.print("Braider acceleration set to ");
-      Serial.print(braiderAcceleration);
+      Serial.print(braider.braiderAcceleration);
       Serial.println(" steps/s^2.");  
-      recalc();
-      displaySettings();
+      braider.recalc();
+      braider.displaySettings();
       break;
     case '?' :
-      displaySettings();
+      braider.displaySettings();
       break;
     case 'P' :
-      displayPosition();
+      braider.displayPosition();
       break;
     case 'H' :
-      haltSteppers();
+      braider.haltSteppers();
       break;      
     case 'D' :
-      braidDirection*=-1;
-      displaySettings();
+      braider.braidDirection*=-1;
+      braider.displaySettings();
       break;
   }
 }

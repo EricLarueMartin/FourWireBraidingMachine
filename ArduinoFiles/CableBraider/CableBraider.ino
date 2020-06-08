@@ -47,11 +47,13 @@ class cableBraider
   // run control
   bool bRunning = false;
   bool outputsEnabled = false;
+  bool freeRunning = false;
   float cableLength; // target cable length
 
-  cableBraider(int pin0, int pin1, int pin2, int pin3, int pin4, int pin5, int pin6, int pin7); // constructor sets defaults
+  char machineName[40] = "";
+
+  cableBraider(int pins[8], char setName[40]); // constructor sets defaults
   void braidCable();
-  bool cableBraider::runCheck();
   void cableBraider::haltSteppers();
   void cableBraider::recalc();
   void cableBraider::displaySettings();
@@ -63,10 +65,10 @@ class cableBraider
 0-3 - winder L298N pins 1-4
 4-8 - braider L298N pins 1-4   
 */
-cableBraider::cableBraider(int pin0, int pin1, int pin2, int pin3, int pin4, int pin5, int pin6, int pin7) // constructor sets defaults
+cableBraider::cableBraider(int pins[8], char setName[40] = "") // constructor sets defaults
 {
-  winderStepper = new AccelStepper(MotorInterfaceType,pin0,pin1,pin2,pin3);
-  braiderStepper = new AccelStepper(MotorInterfaceType,pin4,pin5,pin6,pin7);
+  winderStepper = new AccelStepper(MotorInterfaceType,pins[0],pins[1],pins[2],pins[3]);
+  braiderStepper = new AccelStepper(MotorInterfaceType,pins[4],pins[5],pins[6],pins[7]);
 
   steppers = new MultiStepper;
 
@@ -82,6 +84,7 @@ cableBraider::cableBraider(int pin0, int pin1, int pin2, int pin3, int pin4, int
   bRunning = false;
   cableLength = 0.0;
   outputsEnabled = false;
+  memcpy(machineName,setName,40);
 }
 
 void cableBraider::braidCable() {
@@ -96,7 +99,8 @@ void cableBraider::braidCable() {
   winderStepper->setCurrentPosition(0);
   braiderStepper->setCurrentPosition(0);
   // Run to position with set speed and acceleration:
-  Serial.print("Stepping to position ");
+  Serial.print(machineName);
+  Serial.print(" stepping to position ");
   Serial.print(cableLength);
   Serial.print(" cm. ( ");
   Serial.print(absolute[0]);
@@ -108,18 +112,11 @@ void cableBraider::braidCable() {
   steppers->moveTo(absolute);
 }
 
-bool cableBraider::runCheck() {
-  if (steppers->run()){  
-    Serial.print("Position ");
-    Serial.print(winderStepper->currentPosition()/StepsPerDistance);
-    Serial.println(" cm.");
-    return true;
-  } else return false;
-}
-
 void cableBraider::haltSteppers()
 {
-  Serial.println("Stopping steppers.");
+  Serial.print("Stopping steppers on ");
+  Serial.print(machineName);
+  Serial.println(".");
   winderStepper->stop();
   braiderStepper->stop();
   bRunning = false;
@@ -145,6 +142,7 @@ void cableBraider::recalc()
 
 void cableBraider::displaySettings()
 {
+  Serial.println(machineName);
   Serial.print("braidsPer = ");
   Serial.println(braidsPer);
   Serial.print("windingSpeed = ");
@@ -161,7 +159,8 @@ void cableBraider::displaySettings()
 
 void cableBraider::displayPosition() 
 {
-  Serial.print("Position ");
+  Serial.print(machineName);
+  Serial.print("'s position is ");
   Serial.print(winderStepper->currentPosition()/StepsPerDistance);
   Serial.print(" cm. ( ");
   Serial.print(winderStepper->currentPosition());
@@ -170,18 +169,22 @@ void cableBraider::displayPosition()
   Serial.println(" )");      
 }
 
-cableBraider braider(4,5,6,7,8,9,10,11);
+const int NumBraiders = 1;
+const int BraiderPins[NumBraiders][8] = {
+  {4,5,6,7,8,9,10,11} // pins for first braider
+  };
+const char MachineNames[NumBraiders][40] = {
+  "Prototype B (0)"
+};
+  
+cableBraider *braider[NumBraiders];
 
 void setup() {
 // start serial port at 9600 bps
   Serial.begin(9600);
 
 // wait for serial port to connect. Needed for native USB port only
-  int ctDelay = 10000; // milliseconds to wait on serial
-  while (!Serial) {
-    delay(1);
-    --ctDelay;
-  };
+  for (int ctDelay = 10000; !Serial && ctDelay > 0; --ctDelay) { delay(1); }
   if (Serial)
   {
     Serial.print("StepsPerDistance = ");
@@ -200,82 +203,91 @@ void setup() {
     Serial.println("R <length> : run to braid length of cable in centimeters.");
   }
   pinMode(13,INPUT_PULLUP);
-  
-  braider.recalc();
-  braider.displaySettings();
 
+  for (int ct = 0; ct < NumBraiders; ++ct) 
+  {
+    braider[ct] = new cableBraider(BraiderPins[ct],MachineNames[ct]);
+    braider[ct]->recalc();
+    braider[ct]->displaySettings();
+  }
 }
 
 void loop() {
-  while (!Serial.available()) {
-    if (braider.bRunning) // was running
+  while (!Serial.available())
+    for (int ctBraider = 0; ctBraider < NumBraiders; ++ctBraider)
     {
-      if (!braider.steppers->run()) { // did it stop?     
-        braider.displayPosition();
-        braider.winderStepper->disableOutputs();
-        braider.braiderStepper->disableOutputs();
-        braider.bRunning = false;
+      if (braider[ctBraider]->bRunning) // was running
+      {
+        braider[ctBraider]->bRunning = braider[ctBraider]->steppers->run();
+        if (!braider[ctBraider]->bRunning && digitalRead(braider[ctBraider]->braidPin)) { // did it stop and braidPin is open?     
+          braider[ctBraider]->displayPosition();
+          braider[ctBraider]->winderStepper->disableOutputs();
+          braider[ctBraider]->braiderStepper->disableOutputs();
+        }          
       }
-    }
-    else if (!digitalRead(braider.braidPin)) // run pin is grounded
-    {
-        if (Serial &&  millis()%10000 == 0)
-          Serial.println("Free running.");
-        if (!braider.outputsEnabled)
-        { // if outputs aren't enabled then run to braid a short amount of cable just to get settings going
-          braider.cableLength = 1.0;
-          braider.braidCable();
-        }
-        braider.winderStepper->runSpeed();
-        braider.braiderStepper->runSpeed();
-    }
+      else if (!digitalRead(braider[ctBraider]->braidPin)) // run for 1 cm if braidPin grounded
+      {
+        braider[ctBraider]->cableLength = 1.0;
+        braider[ctBraider]->braidCable();
+        braider[ctBraider]->bRunning = true;
+      }
   } 
+  static int nBraider = 0;
   char arg = Serial.read();
   switch (toUpperCase(arg)) {
+    case 'M' :
+      nBraider = Serial.parseInt();
+      if (nBraider >= NumBraiders)
+        nBraider = 0;
+      Serial.print("Braiding machine ");
+      Serial.print(nBraider);
+      Serial.println(" selected.");  
+      braider[nBraider]->displaySettings();
+      break;
     case 'R' :
-      braider.cableLength = Serial.parseFloat();
+      braider[nBraider]->cableLength = Serial.parseFloat();
       Serial.print("Braiding for ");
-      Serial.print(braider.cableLength);
+      Serial.print(braider[nBraider]->cableLength);
       Serial.println(" cm.");  
-      braider.braidCable();
-      braider.bRunning = true;
+      braider[nBraider]->braidCable();
+      braider[nBraider]->bRunning = true;
       break;
     case 'B' :
-      braider.braidsPer = Serial.parseFloat();
+      braider[nBraider]->braidsPer = Serial.parseFloat();
       Serial.print("Braid density set to ");
-      Serial.print(braider.braidsPer);
+      Serial.print(braider[nBraider]->braidsPer);
       Serial.println(" braids per cm.");  
-      braider.recalc();
-      braider.displaySettings();
+      braider[nBraider]->recalc();
+      braider[nBraider]->displaySettings();
       break;
     case 'S' :
-      braider.windingSpeed = Serial.parseFloat();
+      braider[nBraider]->windingSpeed = Serial.parseFloat();
       Serial.print("Winding speed set to ");
-      Serial.print(braider.windingSpeed);
+      Serial.print(braider[nBraider]->windingSpeed);
       Serial.println(" cm/s.");  
-      braider.recalc();
-      braider.displaySettings();
+      braider[nBraider]->recalc();
+      braider[nBraider]->displaySettings();
       break;
     case 'A' :
-      braider.braiderAcceleration = Serial.parseFloat();
+      braider[nBraider]->braiderAcceleration = Serial.parseFloat();
       Serial.print("Braider acceleration set to ");
-      Serial.print(braider.braiderAcceleration);
+      Serial.print(braider[nBraider]->braiderAcceleration);
       Serial.println(" steps/s^2.");  
-      braider.recalc();
-      braider.displaySettings();
+      braider[nBraider]->recalc();
+      braider[nBraider]->displaySettings();
       break;
     case '?' :
-      braider.displaySettings();
+      braider[nBraider]->displaySettings();
       break;
     case 'P' :
-      braider.displayPosition();
+      braider[nBraider]->displayPosition();
       break;
     case 'H' :
-      braider.haltSteppers();
+      braider[nBraider]->haltSteppers();
       break;      
     case 'D' :
-      braider.braidDirection*=-1;
-      braider.displaySettings();
+      braider[nBraider]->braidDirection*=-1;
+      braider[nBraider]->displaySettings();
       break;
   }
 }

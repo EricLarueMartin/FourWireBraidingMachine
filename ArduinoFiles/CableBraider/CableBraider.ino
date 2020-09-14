@@ -7,7 +7,8 @@
 #define MotorInterfaceType 4
 
 // physical values used to calculate stepper speeds
-const int HornGearTeeth = 26;
+const int HornGearTeeth = 30; // 30  
+const float ReductionRatio = 5; // reduction ratio on braiding drive gear
 const int DriveGearTeeth = 6;
 const int BraiderStepsPerRevolution = 200;
 const int WinderStepsPerRevolution = 200;
@@ -17,7 +18,7 @@ const float WinderCircumference = 4.5 * 3.14159265; // in centimeters
 // constants that depend on other constants
 
 const float StepsPerDistance = WinderStepsPerRevolution/WinderCircumference; // steps per distance unit (cm) on winder
-const float StepsPerBraid = BraiderStepsPerRevolution*HornGearTeeth/DriveGearTeeth*RevolutionsPerBraid; // steps to complete a braiding cycle
+const float StepsPerBraid = BraiderStepsPerRevolution*HornGearTeeth*ReductionRatio/DriveGearTeeth*RevolutionsPerBraid; // steps to complete a braiding cycle
 
 // ratio of braiding stepper motor to winding gear to get one braid per centimeter
 const float StepRatio =  StepsPerBraid/StepsPerDistance;
@@ -32,7 +33,7 @@ class cableBraider
 
   // user adjusted settings and defaults
   float windingSpeed = 0.1; // one distance unit (cm) per second
-  float braidsPer = 1.0; // per distance unit (cm)
+  float braidsPer = 0.25; // per distance unit (cm)
   float braiderAcceleration = 25.0; // acceleration of braider in steps per second squared
   int braidDirection = 1; // braiding motor turning direction
 
@@ -76,10 +77,10 @@ cableBraider::cableBraider(int pins[8], char setName[40] = "") // constructor se
   steppers->addStepper(*braiderStepper);
 
   // this part should be redundant, but just in case
-  windingSpeed = 0.1;
-  braidsPer = 1.0;
-  braiderAcceleration = 25.0;
-  braidDirection = 1;
+//  windingSpeed = 0.3;
+//  braidsPer = 0.3;
+//  braiderAcceleration = 25.0;
+//  braidDirection = 1;
   braidPin = 13;
   bRunning = false;
   cableLength = 0.0;
@@ -184,7 +185,11 @@ void setup() {
   Serial.begin(9600);
 
 // wait for serial port to connect. Needed for native USB port only
-  for (int ctDelay = 10000; !Serial && ctDelay > 0; --ctDelay) { delay(1); }
+  pinMode(13,INPUT_PULLUP); // set the external run pin to pullup mode, so it will read high unless shorted to ground
+  for (int ctDelay = 0; !Serial; ++ctDelay) { 
+    if (ctDelay>10 && !digitalRead(13)) break; // if the external run pin is shorted to ground, just wait a short time to initialize to be sure then go without serial
+    delay(1); 
+    }
   if (Serial)
   {
     Serial.print("StepsPerDistance = ");
@@ -202,7 +207,6 @@ void setup() {
     Serial.println("H          : halt motors.");
     Serial.println("R <length> : run to braid length of cable in centimeters.");
   }
-  pinMode(13,INPUT_PULLUP);
 
   for (int ct = 0; ct < NumBraiders; ++ct) 
   {

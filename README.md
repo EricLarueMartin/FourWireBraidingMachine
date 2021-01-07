@@ -25,4 +25,5 @@ M3 threaded rods
 
 M3 lock nuts (jam nuts could also be used)
 
-Spring (for clutch, SP-9702 was used but anything that fits and isn't too strong should work)
+Spring for clutch, SP-9702 was used but anything that fits and isn't too strong should work.
+Spring to tips, 152-B from W.B. Jones Spring Co was used.

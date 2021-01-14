@@ -8,7 +8,7 @@
 
 // physical values used to calculate stepper speeds
 const int HornGearTeeth = 30; // 30  
-const float ReductionRatio = 5; // reduction ratio on braiding drive gear
+const float ReductionRatio = 1; // reduction ratio on braiding drive gear
 const int DriveGearTeeth = 6;
 const int BraiderStepsPerRevolution = 200;
 const int WinderStepsPerRevolution = 200;
@@ -32,10 +32,10 @@ class cableBraider
   MultiStepper *steppers;
 
   // user adjusted settings and defaults
-  float windingSpeed = 0.1; // one distance unit (cm) per second
+  float windingSpeed = 0.6; // one distance unit (cm) per second
   float braidsPer = 0.25; // per distance unit (cm)
   float braiderAcceleration = 25.0; // acceleration of braider in steps per second squared
-  int braidDirection = 1; // braiding motor turning direction
+  int braidDirection = -1; // braiding motor turning direction
 
   int braidPin = 13; // default is all braiders run if pin 13 is grounded
   

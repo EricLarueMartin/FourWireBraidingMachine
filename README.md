@@ -27,4 +27,22 @@ M3 lock nuts (jam nuts could also be used)
 
 Spring for clutch, SP-9702 was used but anything that fits and isn't too strong should work.
 
-Spring to tips, 152-B from W.B. Jones Spring Co was used.
+Spring for tips, 152-B from W.B. Jones Spring Co was used. Many other springs were found to work, but this is less tolerant than the clutch as it can't be adjusted.
+
+**Ultem parts for ultra clean braiding:**
+
+For the spools that go around the track:
+
+4x SpoolHolderGuide
+
+4x SpoolHolderRiser
+
+4x SpoolSinglePieceTraditionalMachining — this is a remake of Spool designed for traditional machining.
+
+For the winder:
+
+1x WinderBracketInsert
+
+1x WinderSpoolSinglePieceTraditionalMachining — this is a remake of WinderSpool designed for traditional machining.
+
+When using the braider with Ultem parts print WinderBracket without the insert. WinderBracket and WinderBracketInsert can be printed as a single piece if not using a clean insert.

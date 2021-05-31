@@ -1,0 +1,573 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Non-twisting Cable Braider
+\end_layout
+
+\begin_layout Author
+Eric L.
+ Martin
+\end_layout
+
+\begin_layout Date
+09/20/20
+\end_layout
+
+\begin_layout Standard
+A non-twsting cable braider was designed for braiding the signal cables
+ for the LEGEND experiment, which requires very low noise signal transmission.
+ The area between cables acts as an antenna, picking up noise proportional
+ to the area enclosed by the cables from ambient electromagnetic radiation.
+ Two methods of reducing pikcup noise used by LEGEND are braiding cables
+ and shielding cables.
+ By braiding the cables alternating loops are formed, which will have alternatin
+g polarity of the noise from loop to loop, this causes partial cancellation
+ of pickup noise.
+ Smaller loops formed by twisting the cable tighter tends to provide better
+ noise reduciton, and has the added benefit of producing an easier to handle
+ cable bundle.
+ Shieling the signal conductor with a grounded shield also reduces pickup
+ noise, but there is always some noise that makes it through the shield
+ especially at low frequency where the skin depth is longer than shield
+ thickness.
+ In bundles of shielded cables the shields themselves also become antenna
+ loops, which can be mitigated by braiding the cables.
+ LEGEND is testing braided bundles of shielded coaxial cables.
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename CableBraider.png
+	width 5in
+	rotateAngle 90
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Non-twisting-cable-braider"
+
+\end_inset
+
+Non-twisting cable braider.
+ Shown with one spool assembly, one spring tip on the lower right, and one
+ tip cover on the lower left.
+ Shafts, springs, motors, and most fasteners not shown.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "45text%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename SpoolAssembly.png
+	height 3in
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "45text%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename SpoolAssemblyHalfView.png
+	height 3in
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:spool-assembly"
+
+\end_inset
+
+A spool assembly, half section view on the right.
+ Cable is wound around the spool and the free end is threaded through the
+ hole in the top of the spool holder.
+ The spool rotates around a horizontal axle, this way no twisting of the
+ cable occurs from unwinding the cable from the spool.The spring around the
+ spool axel held by a bushing positioned by a lock nut applies force on
+ the spool against the rising arm of the spool holder.
+ Moving the lock nut adjusts the tension of the spool to prevent it from
+ unwinding freely.
+ An alternate design with a rewinder was considered to take up slack as
+ the spool traveled through the central area of the track, but the slack
+ didn't cause any issues so this simple friction clutch was used.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+The LEGEND cable braider uses spools on carriages that are moved around
+ a track by horn gears.
+ The cable is wound on another spool, and the relative speed at which the
+ cable is wound compared to how frequently the spool carriages move around
+ the track controls the braid pitch.
+ Cable braiders employing spools being moved around a track by horn gears
+ have been used for over a century.
+ The most popular type is a maypole pattern, formed by two groups of cable
+ carriers moving in opposite directions around a rough circle.
+ The carriers switch between the inside and outside track to form a tube
+ with a weave pattern around the center.
+ This braider was based closely on an expired patent design, patented in
+ 1989 under US patent 4803909.
+ LEGEND uses only four cables instead of the eight in the 1989 design, but
+ the machine is capable of braiding eight or even more cables by installing
+ more spools and spool carriages.
+ When used with only four cables, such as will be used for LEGEND, the pattern
+ is identical to a maypole braider.
+ Braiding the LEGEND signal cables on this style of braiding machine resulted
+ in either braids with too long a braid pitch to be easily handled, or kinks
+ in the braided cable as shown in figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Kinks"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename Kinks.jpg
+	lyxscale 25
+	width 5in
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Kinks"
+
+\end_inset
+
+Kinks occurred when tightly braiding the LEGEND signal cables using a braiding
+ machine that would twist the cables.
+ Two such kinks are circled in red.
+ Also shown on the spool is a section of cable that was braided with a longer
+ braid pitch.
+ While the longer braid pitch prevented kinks, the cable was difficult to
+ handle.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+As the spools are moved around the track they rotate one revolution per
+ trip around the track, twisting the cable once.
+ This can be compensated for by turning the spool vertically, having the
+ spools vertical results in one twist per loop removed from the spool.
+ If the spools are wound such the the twist from cable coming off the spool
+ cancels that of the twist from traversing the track there is no resulting
+ twist in the cable, however this requires the circumference of the spool
+ must be matched to the braid pitch.
+ This would require a tightly wound spool for a tight cable braid, limiting
+ the braid pitch by the minimum bending radius of the cable.
+ This also prevents loading a large amount of cable on small spools as the
+ circumference on the outer layers of winding wound be significantly larger
+ than the inner layers.
+\end_layout
+
+\begin_layout Standard
+Two improvement were made to the cable braider over the previous design.
+\end_layout
+
+\begin_layout Standard
+Most importantly, the spools were flipped horizontally so that there was
+ no twisting induced by unwinding the cable from the spool (see figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:spool-assembly"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and the track was redesigned to compensate for rotation of the spool as
+ it traveled around the track (see figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Track"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+ This counter rotation was induced by recesses added to the track.
+ The recesses would catch the carriage guides and rotate them in the opposite
+ direction that movement around the track was causing, linking the compensation
+ to the movement around the track rather than the cable coming off the spool.
+ A retractable part of the track that the guide can push aside was found
+ most effective, but rotation can be induced using a fixed track with only
+ recesses.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename GuidePlate.png
+	width 5in
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Track"
+
+\end_inset
+
+Track with rotation countering corners.
+ Only one of the spring-loaded retractable tips is shown in blue in the
+ upper right, and only one cover is shown installed in grey in the lower
+ right.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename NoKinks.jpg
+	lyxscale 25
+	width 5in
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The same cable as in figure
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Kinks"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ rebraided with the non-twisting cable braider.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The second improvement was to shift the position of the spool carriages
+ on the horn gears.
+ In the previous design the slots in the horn gears were symmetric, causing
+ two spools to be in the same position on opposite sides of the track.
+ The carriages experience some positions of higher resistance, the most
+ noticable for the non-twisting cable braider is when pushing on the retractable
+ track section.
+ By shifting the spool positions (see figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Offset"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) the machine only has to push a spool carriage through these difficult
+ points one at a time instead of two at a time, reducing the torque required
+ by the motor and allowing the machine to run faster.
+ Breaking the symmetry of the track would have accomplished this as well
+ but would have been more complicated.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename SpoolOffset.png
+	width 5in
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Offset"
+
+\end_inset
+
+Additional slots were added to the horn gears to allow offsetting the spools,
+ so no more than one spool at a time passed the same problem point in the
+ track.
+ Preventing two spools from passing the rotation compensating corners at
+ the same time is most important, as that is the highest resistance point
+ in the movement.
+ The carriage guide portion of the spool assemblies shown in grey.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

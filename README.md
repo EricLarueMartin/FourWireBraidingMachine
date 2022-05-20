@@ -46,3 +46,5 @@ For the winder:
 1x WinderSpoolSinglePieceTraditionalMachining — this is a remake of WinderSpool designed for traditional machining.
 
 When using the braider with Ultem parts print WinderBracket without the insert. WinderBracket and WinderBracketInsert can be printed as a single piece if not using a clean insert.
+
+This design is free to use under the Creative Commons license. https://creativecommons.org/licenses/by-nc-sa/4.0/
